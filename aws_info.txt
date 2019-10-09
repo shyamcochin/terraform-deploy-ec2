@@ -1,0 +1,42 @@
+
+Ohio (us-east-2)
+================
+Amazon Linux 2 AMI (HVM), SSD Volume Type - ami-00c03f7f7f2ec15c3
+Ubuntu Server 18.04 LTS (HVM), SSD Volume Type - ami-05c1fa8df71875112
+Ubuntu Server 16.04 LTS (HVM), SSD Volume Type - ami-0f93b5fd8f220e428
+
+
+Virginia (us-east-1)
+====================
+Amazon Linux 2 AMI (HVM), SSD Volume Type - ami-0b69ea66ff7391e80
+Ubuntu Server 18.04 LTS (HVM), SSD Volume Type - ami-07d0cf3af28718ef8
+Ubuntu Server 16.04 LTS (HVM), SSD Volume Type - ami-0cfee17793b08a293
+
+The cloud-init output log file (/var/log/cloud-init-output.log) captures console output so it is easy to debug your scripts following a launch if the instance does not behave the way you intended.
+When a user data script is processed, it is copied to and executed from /var/lib/cloud/instances/instance-id/. 
+
+Scripts entered as user data are executed as the root user, so do not use the sudo command in the script. 
+
+#!/bin/bash
+yum update -y
+amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+yum install -y httpd mariadb-server
+systemctl start httpd
+systemctl enable httpd
+usermod -a -G apache ec2-user
+chown -R ec2-user:apache /var/www
+chmod 2775 /var/www
+find /var/www -type d -exec chmod 2775 {} \;
+find /var/www -type f -exec chmod 0664 {} \;
+echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
+ 
+
+#!/bin/bash
+yum update -y
+service httpd start
+chkconfig httpd on
+
+
+http://my.public.dns.amazonaws.com/phpinfo.php
+
+/var/log/cloud-init-output.log
